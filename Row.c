@@ -454,6 +454,13 @@ void Row_printNanoseconds(RichString* str, unsigned long long totalNanoseconds, 
    Row_printTime(str, totalHundredths, coloring);
 }
 
+static inline unsigned char Row_getPrecision (double displayRate){
+   if (displayRate < 10) return 3;
+   else if (displayRate < 100) return 2;
+   else if (displayRate < 1000) return 1;
+   else return 0;
+}
+
 void Row_printRate(RichString* str, double rate, bool coloring) {
    char buffer[16];
 
@@ -468,27 +475,34 @@ void Row_printRate(RichString* str, double rate, bool coloring) {
    }
 
    if (!isNonnegative(rate)) {
-      RichString_appendAscii(str, shadowColor, "        N/A ");
-   } else if (rate < 0.005) {
-      int len = snprintf(buffer, sizeof(buffer), "%7.2f B/s ", rate);
-      RichString_appendnAscii(str, shadowColor, buffer, len);
+      RichString_appendAscii(str, shadowColor, "     N/A ");
    } else if (rate < ONE_K) {
-      int len = snprintf(buffer, sizeof(buffer), "%7.2f B/s ", rate);
+      int len = snprintf(buffer, sizeof(buffer), "%5.0fB/s ", rate);
       RichString_appendnAscii(str, baseColor, buffer, len);
    } else if (rate < ONE_M) {
-      int len = snprintf(buffer, sizeof(buffer), "%7.2f K/s ", rate / ONE_K);
+      double rateToPrint =  rate / ONE_K;
+      unsigned char precision = Row_getPrecision (rateToPrint);
+      int len = snprintf(buffer, sizeof(buffer), "%5.*fK/s ", precision, rateToPrint);
       RichString_appendnAscii(str, baseColor, buffer, len);
    } else if (rate < ONE_G) {
-      int len = snprintf(buffer, sizeof(buffer), "%7.2f M/s ", rate / ONE_M);
+      double rateToPrint =  rate / ONE_M;
+      unsigned char precision = Row_getPrecision (rateToPrint);
+      int len = snprintf(buffer, sizeof(buffer), "%5.*fM/s ", precision, rateToPrint);
       RichString_appendnAscii(str, megabytesColor, buffer, len);
    } else if (rate < ONE_T) {
-      int len = snprintf(buffer, sizeof(buffer), "%7.2f G/s ", rate / ONE_G);
+      double rateToPrint =  rate / ONE_G;
+      unsigned char precision = Row_getPrecision (rateToPrint);
+      int len = snprintf(buffer, sizeof(buffer), "%5.*fG/s ", precision, rateToPrint);
       RichString_appendnAscii(str, largeNumberColor, buffer, len);
    } else if (rate < ONE_P) {
-      int len = snprintf(buffer, sizeof(buffer), "%7.2f T/s ", rate / ONE_T);
+      double rateToPrint =  rate / ONE_T;
+      unsigned char precision = Row_getPrecision (rateToPrint);
+      int len = snprintf(buffer, sizeof(buffer), "%5.*fT/s ", precision, rateToPrint);
       RichString_appendnAscii(str, largeNumberColor, buffer, len);
    } else {
-      int len = snprintf(buffer, sizeof(buffer), "%7.2f P/s ", rate / ONE_P);
+      double rateToPrint =  rate / ONE_P;
+      unsigned char precision = Row_getPrecision (rateToPrint);
+      int len = snprintf(buffer, sizeof(buffer), "%5.*fP/s ", precision, rateToPrint);
       RichString_appendnAscii(str, largeNumberColor, buffer, len);
    }
 }
